@@ -6,17 +6,17 @@ authors = ["Dima Kuchin <dima@mirable.io>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.12"
 fastapi = "^0.103.1"
-uvicorn = "^0.23.2"
+uvicorn = "0.34.2"
 markdown = "^3.4.4"
 toml = "^0.10.2"
 openai = {extras = ["datalib"], version = "^0.28.0"}
 faiss-cpu = "^1.7.4"
 tqdm = "^4.66.1"
-tiktoken = "^0.5.1"
-
-
+tiktoken = "*"
+markdown-it-py = { version = "^3.0.0", extras = ["plugins"] }
+pygments = "2.19.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

@@ -8,3 +8,7 @@ embeddings.db
 settings.db
 tmp_*
 .ipynb_checkpoints
+
+.idea/
+
+app.log
