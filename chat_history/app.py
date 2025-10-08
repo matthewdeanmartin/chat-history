@@ -14,9 +14,9 @@ import time
 import os
 import sys
 
-from history import load_conversations
-from utils import time_group, human_readable_time
-from llms import load_create_embeddings, search_similar, openai_api_cost, TYPE_CONVERSATION, TYPE_MESSAGE
+from chat_history.history import load_conversations
+from chat_history.utils import time_group, human_readable_time
+from chat_history.llms import load_create_embeddings, search_similar, openai_api_cost, TYPE_CONVERSATION, TYPE_MESSAGE
 from markdown_it import MarkdownIt
 from mdit_py_plugins.footnote import footnote_plugin
 from mdit_py_plugins.tasklists import tasklists_plugin
@@ -321,7 +321,7 @@ def get_ai_cost():
 # Search conversations and messages
 @api_app.get("/search")
 def search_conversations(query: str = Query(..., min_length=3, description="Search query")):
-    logger.debug(f"Searching for: {query}")
+    logger.info(f"Searching for: {query}")
     start_time = time.time()
 
     try:
@@ -350,6 +350,7 @@ def search_conversations(query: str = Query(..., min_length=3, description="Sear
             query_exact = False
 
         if OPENAI_ENABLED and not query_exact:
+            print("using embeddings")
             for _id in search_similar(query, embeddings_ids, embeddings_index):
                 conv = find_conversation_by_id(conversations, embeddings[_id]["conv_id"])
                 if conv:
@@ -362,6 +363,7 @@ def search_conversations(query: str = Query(..., min_length=3, description="Sear
                     if msg:
                         add_search_result(search_results, result_type, conv, msg)
         else:
+            print("not using embeddings")
             for conv in conversations:
                 query_lower = query.lower()
                 if (conv.title or "").lower().find(query_lower) != -1:

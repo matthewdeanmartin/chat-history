@@ -1,7 +1,6 @@
 import openai
 import faiss
 import numpy as np
-import json
 import sqlite3
 import logging
 import time
@@ -19,7 +18,7 @@ def get_embedding(text, retries=3, delay=2):
 
     while attempt < retries:
         try:
-            logger.debug(f"Getting embedding for text of length {len(text)}")
+            logger.info(f"Getting embedding for text of length {len(text)}")
             result = openai.Embedding.create(
                 input=text,
                 model="text-embedding-ada-002"
@@ -28,11 +27,12 @@ def get_embedding(text, retries=3, delay=2):
         except Exception as e:
             attempt += 1
             if attempt >= retries:
-                logger.error(f"Failed to get embedding after {retries} attempts: {e}")
+                logger.info(f"Failed to get embedding after {retries} attempts: {e}")
                 raise
             logger.warning(f"Embedding attempt {attempt} failed: {e}. Retrying in {delay} seconds...")
             time.sleep(delay)
             delay *= 2  # Exponential backoff
+    return None
 
 
 def load_create_embeddings(path: str, conversations):
@@ -244,6 +244,7 @@ def load_create_embeddings(path: str, conversations):
 def search_similar(query, embeddings_ids, embeddings_index, top_n=10):
     """Search for similar embeddings with error handling"""
     try:
+        logger.info(f"Searching for similar embeddings...{query}")
         query_embedding = get_embedding(query)
         query_vector = np.array(query_embedding).astype('float32').reshape(1, -1)
         distances, indices = embeddings_index.search(query_vector, top_n)
@@ -252,6 +253,7 @@ def search_similar(query, embeddings_ids, embeddings_index, top_n=10):
         valid_indices = [i for i in indices[0] if 0 <= i < len(embeddings_ids)]
         similar_ids = [embeddings_ids[i] for i in valid_indices]
 
+        logger.info(f"Found {len(similar_ids)} similar embeddings")
         return similar_ids[:top_n]
     except Exception as e:
         logger.error(f"Error during similarity search: {e}")
